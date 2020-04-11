@@ -25,16 +25,22 @@ const PROPOSAL_STATE_COMPLETED = 5;
 
 describe('TestKingAutomatonProposals 4 slots', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
+  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
     account = accounts[0];
     slots = 4;
+
+    // Fetch constants from Proposals library.
+    proposals = await Proposals.deployed();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
+
+    // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
-    proposal_start_period = 90;
-    contest_period = 90;
   });
 
   it("correct proposal creation", async() => {
@@ -220,16 +226,22 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
 
 describe('TestKingAutomatonProposals 256 slots', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
+  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
     account = accounts[0];
     slots = 256;
+
+    // Fetch constants from Proposals library.
+    proposals = await Proposals.deployed();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
+
+    // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
-    proposal_start_period = 90;
-    contest_period = 90;
   });
 
   it("rejection during initial voting", async() => {
@@ -417,6 +429,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
 
 describe('TestKingAutomatonProposals claiming reward', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
+  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
@@ -426,14 +439,19 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     budget_period_len = 300;
     num_periods = 2;
     budget_per_period = 20;
+
+    // Fetch constants from Proposals library.
+    proposals = await Proposals.deployed();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
+
+    // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, treasury_percentage);
     await koh.setOwnerAllSlots();
     id = await koh.createProposal.call(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
     await koh.createProposal(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
     await koh.payForGas(id, slots - 1);
     await koh.updateProposalState(id);
-    proposal_start_period = 90;
-    contest_period = 90;
 
     treasury_address = "0x0000000000000000000000000000000000000001";
     proposal_address = "0x0000000000000000000000000000000000000064";

@@ -6,8 +6,8 @@ library Proposals {
   enum BallotBoxState {Uninitialized, PrepayingGas, Active, Inactive}
   enum ProposalState {Uninitialized, Started, Accepted, Rejected, Contested, Completed}
 
-  uint256 public constant PROPOSAL_START_PERIOD = 90 seconds; // 1 weeks;
-  uint256 public constant CONTEST_PERIOD = 90 seconds;  //
+  uint256 public constant PROPOSAL_START_PERIOD = 15 minutes; // 1 weeks;
+  uint256 public constant CONTEST_PERIOD = 15 minutes;  //
 
   uint256 constant MSB_SET = 1 << 255;
   uint256 constant UINT256_MAX = ~uint256(0);
