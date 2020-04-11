@@ -34,8 +34,8 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
 
     // Fetch constants from Proposals library.
     proposals = await Proposals.deployed();
-    proposal_start_period = 1 * proposals.PROPOSAL_START_PERIOD();
-    contest_period = 1 * proposals.CONTEST_PERIOD();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2);
@@ -235,8 +235,8 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
 
     // Fetch constants from Proposals library.
     proposals = await Proposals.deployed();
-    proposal_start_period = 1 * proposals.PROPOSAL_START_PERIOD();
-    contest_period = 1 * proposals.CONTEST_PERIOD();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2);
@@ -442,8 +442,8 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
 
     // Fetch constants from Proposals library.
     proposals = await Proposals.deployed();
-    proposal_start_period = 1 * proposals.PROPOSAL_START_PERIOD();
-    contest_period = 1 * proposals.CONTEST_PERIOD();
+    proposal_start_period = 1 * (await proposals.PROPOSAL_START_PERIOD());
+    contest_period = 1 * (await proposals.CONTEST_PERIOD());
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, treasury_percentage);
