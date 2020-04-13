@@ -10,3 +10,13 @@ Smart Contract Tests:
 Smart Contract Coverage:
 
 [![Coverage Status](https://coveralls.io/repos/github/automaton-network/automaton-bootstrap/badge.svg?branch=master&service=github)](https://coveralls.io/github/automaton-network/automaton-bootstrap?branch=master)
+
+## Smart Contract Diagrams
+
+![DEX](diagrams/dex.svg)
+
+![Proposals](diagrams/proposals.svg)
+
+![Util](diagrams/util.svg)
+
+![KingAutomaton](diagrams/king-automaton.svg)
