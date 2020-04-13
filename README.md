@@ -13,12 +13,22 @@ Smart Contract Coverage:
 
 ## Smart Contract Diagrams
 
+**DEX**
+
 ![DEX](diagrams/dex.svg)
+
+**Proposals**
 
 ![Proposals](diagrams/proposals.svg)
 
+**Util**
+
 ![Util](diagrams/util.svg)
 
+**KingOfTheHill**
+
 ![KingOfTheHill](diagrams/king-of-the-hill.svg)
+
+**KingAutomaton**
 
 ![KingAutomaton](diagrams/king-automaton.svg)
