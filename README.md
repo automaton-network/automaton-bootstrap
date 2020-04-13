@@ -15,20 +15,20 @@ Smart Contract Coverage:
 
 **DEX**
 
-![DEX](diagrams/dex.svg)
+[![DEX](diagrams/dex.svg)](diagrams/dex.png)
 
 **Proposals**
 
-![Proposals](diagrams/proposals.svg)
+[![Proposals](diagrams/proposals.svg)](diagrams/proposals.png)
 
 **Util**
 
-![Util](diagrams/util.svg)
+[![Util](diagrams/util.svg)](diagrams/util.png)
 
 **KingOfTheHill**
 
-![KingOfTheHill](diagrams/king-of-the-hill.svg)
+[![KingOfTheHill](diagrams/king-of-the-hill.svg)](diagrams/king-of-the-hill.png)
 
 **KingAutomaton**
 
-![KingAutomaton](diagrams/king-automaton.svg)
+[![KingAutomaton](diagrams/king-automaton.svg)](diagrams/king-automaton.png)
