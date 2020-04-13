@@ -6,6 +6,10 @@ function create_diagram() {
 }
 
 create_diagram "Proposals" "proposals"
+<<<<<<< Updated upstream
+=======
+create_diagram "KingOfTheHill" "king-of-the-hill"
+>>>>>>> Stashed changes
 create_diagram "KingAutomaton" "king-automaton"
 create_diagram "DEX" "dex"
 create_diagram "Util" "util"
