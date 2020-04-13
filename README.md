@@ -15,20 +15,20 @@ Smart Contract Coverage:
 
 **DEX**
 
-[![DEX](diagrams/dex.svg)](diagrams/dex.png)
+[![DEX](diagrams/dex.svg)](https://raw.githubusercontent.com/automaton-network/automaton-bootstrap/master/diagrams/dex.png)
 
 **Proposals**
 
-[![Proposals](diagrams/proposals.svg)](diagrams/proposals.png)
+[![Proposals](diagrams/proposals.svg)](https://raw.githubusercontent.com/automaton-network/automaton-bootstrap/master/diagrams/proposals.png)
 
 **Util**
 
-[![Util](diagrams/util.svg)](diagrams/util.png)
+[![Util](diagrams/util.svg)](https://raw.githubusercontent.com/automaton-network/automaton-bootstrap/master/diagrams/util.png)
 
 **KingOfTheHill**
 
-[![KingOfTheHill](diagrams/king-of-the-hill.svg)](diagrams/king-of-the-hill.png)
+[![KingOfTheHill](diagrams/king-of-the-hill.svg)](https://raw.githubusercontent.com/automaton-network/automaton-bootstrap/master/diagrams/king-of-the-hill.png)
 
 **KingAutomaton**
 
-[![KingAutomaton](diagrams/king-automaton.svg)](diagrams/king-automaton.png)
+[![KingAutomaton](diagrams/king-automaton.svg)](https://raw.githubusercontent.com/automaton-network/automaton-bootstrap/master/diagrams/king-automaton.png)
