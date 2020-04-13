@@ -19,4 +19,9 @@ Smart Contract Coverage:
 
 ![Util](diagrams/util.svg)
 
+<<<<<<< Updated upstream
+=======
+![KingOfTheHill](diagrams/king-of-the-hill.svg)
+
+>>>>>>> Stashed changes
 ![KingAutomaton](diagrams/king-automaton.svg)
