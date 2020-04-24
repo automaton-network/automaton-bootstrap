@@ -6,7 +6,7 @@ import "../contracts/KingAutomaton.sol";
 
 contract KingAutomatonNoDebug is KingAutomaton {
   // Set mask to 0 as it should be in the live contract.
-  constructor() KingAutomaton (16, 4, 0, 406080000, 10, -10, 2) public {}
+  constructor() KingAutomaton (16, 4, 0, 406080000, 10, -10, 2, 24 * 60 * 60) public {}
 }
 
 contract TestKingAutomatonDebug {

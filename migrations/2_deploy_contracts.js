@@ -21,7 +21,8 @@ module.exports = function(deployer) {
   approval_percentage = 10;
   contest_percentage = -10;
   treasury_limit_percentage = 2;
+  one_day_in_seconds = 24 * 60 * 60;
 
   deployer.deploy(KingAutomaton, numSlots, difficultyBits, mask, initialDailySupply,
-      approval_percentage, contest_percentage, treasury_limit_percentage);
+      approval_percentage, contest_percentage, treasury_limit_percentage, one_day_in_seconds);
 };

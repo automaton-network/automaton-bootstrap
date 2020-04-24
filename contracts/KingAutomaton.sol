@@ -6,6 +6,8 @@ import "./Proposals.sol";
 import "./KingOfTheHill.sol";
 
 contract KingAutomaton is KingOfTheHill {
+  uint256 public proposalsInitialPeriod; // 1 weeks;
+  uint256 public proposalsContestPeriod;  //
 
   int256 constant INT256_MIN = int256(uint256(1) << 255);
   int256 constant INT256_MAX = int256(~(uint256(1) << 255));
@@ -21,7 +23,7 @@ contract KingAutomaton is KingOfTheHill {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   constructor(uint256 nSlots, uint256 minDifficultyBits, uint256 predefinedMask, uint256 initialDailySupply,
-      int256 approval_pct, int256 contest_pct, uint256 treasury_limit_pct) public {
+      int256 approval_pct, int256 contest_pct, uint256 treasury_limit_pct, uint256 one_day_in_seconds) public {
     numSlots = nSlots;
     initMining(nSlots, minDifficultyBits, predefinedMask, initialDailySupply);
     initNames();
@@ -31,6 +33,10 @@ contract KingAutomaton is KingOfTheHill {
     proposalsData.contestPercentage = contest_pct;
     proposalsData.treasuryLimitPercentage = treasury_limit_pct;
     proposalsData.ballotBoxIDs = 99;  // Ensure special addresses are not already used
+    proposalsInitialPeriod = 7 * one_day_in_seconds;  // 7 days;
+    proposalsContestPeriod = 7 * one_day_in_seconds;  // 7 days;
+    minPeriodLenDays = 3;
+    oneDayinSeconds = one_day_in_seconds;
     // Check if we're on a testnet (We will not using predefined mask when going live)
     if (predefinedMask != 0) {
       // If so, fund the owner for debugging purposes.
@@ -117,9 +123,10 @@ contract KingAutomaton is KingOfTheHill {
   // Treasury
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  uint256 public minPeriodLen = 3 days;
+  uint256 public minPeriodLenDays;
 
   bool public debugging = false;
+  uint256 oneDayinSeconds;
 
   Proposals.Data public proposalsData;
 
@@ -174,20 +181,25 @@ contract KingAutomaton is KingOfTheHill {
 
   function createProposal(
     address payable contributor, string calldata title, string calldata documents_link,
-    bytes calldata documents_hash, uint256 budget_period_len, uint256 num_periods, uint256 budget_per_period
+    bytes calldata documents_hash, uint256 budget_period_len_days, uint256 num_periods, uint256 budget_per_period
   ) external returns (uint256 _id) {
-    require(budget_period_len <= minPeriodLen);
+    require(budget_period_len_days >= minPeriodLenDays);
     require(num_periods * budget_per_period <= proposalsData.treasuryLimitPercentage * balances[treasuryAddress] / 100);
-    _id = proposalsData.createProposal(
-        numSlots,
-        contributor,
-        title,
-        documents_link,
-        documents_hash,
-        budget_period_len,
-        num_periods,
-        budget_per_period
-    );
+    _id = proposalsData.getNewProposalID(numSlots);
+
+    Proposals.Proposal storage p = proposalsData.proposals[_id];
+    p.contributor = contributor;
+    p.title = title;
+    p.documentsLink = documents_link;
+    p.documentsHash = documents_hash;
+    p.state = Proposals.ProposalState.Started;
+
+    p.budgetPeriodLen = budget_period_len_days * oneDayinSeconds;
+    p.remainingPeriods = num_periods;
+    p.budgetPerPeriod = budget_per_period;
+    p.initialPeriod = proposalsInitialPeriod;
+    p.contestPeriod = proposalsContestPeriod;
+
     transferInternal(treasuryAddress, address(_id), num_periods * budget_per_period);
   }
 

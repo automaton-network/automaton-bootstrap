@@ -6,9 +6,6 @@ library Proposals {
   enum BallotBoxState {Uninitialized, PrepayingGas, Active, Inactive}
   enum ProposalState {Uninitialized, Started, Accepted, Rejected, Contested, Completed}
 
-  uint256 public constant PROPOSAL_START_PERIOD = 15 minutes; // 1 weeks;
-  uint256 public constant CONTEST_PERIOD = 15 minutes;  //
-
   uint256 constant MSB_SET = 1 << 255;
   uint256 constant UINT256_MAX = ~uint256(0);
   /*
@@ -60,6 +57,8 @@ library Proposals {
 
     uint256 initialEndDate;
     uint256 contestEndDate;
+    uint256 initialPeriod;
+    uint256 contestPeriod;
   }
 
   struct Data {
@@ -90,27 +89,8 @@ library Proposals {
     payForGas(self, id, 1);
   }
 
-  function createProposal(
-      Data storage self,
-      uint256 num_slots,
-      address payable contributor,
-      string memory title,
-      string memory documents_link,
-      bytes memory documents_hash,
-      uint256 budget_period_len,
-      uint256 num_periods,
-      uint256 budget_per_period) public returns (uint256 id) {
+  function getNewProposalID(Data storage self, uint256 num_slots) public returns (uint256 id) {
     id = createBallotBox(self, 2, num_slots);
-    Proposal storage p = self.proposals[id];
-    p.contributor = contributor;
-    p.title = title;
-    p.documentsLink = documents_link;
-    p.documentsHash = documents_hash;
-    p.state = ProposalState.Started;
-
-    p.budgetPeriodLen = budget_period_len;
-    p.remainingPeriods = num_periods;
-    p.budgetPerPeriod = budget_per_period;
   }
 
   // Pay for multiple slots at once, 32 seems to be a reasonable amount.
@@ -216,14 +196,14 @@ library Proposals {
         } else {
           // Either gas has been just paid and time hasn't been set
           // or the initial time hasn't passed
-          p.initialEndDate = now + PROPOSAL_START_PERIOD;
+          p.initialEndDate = now + p.initialPeriod;
         }
       }
     } else if (p_state == ProposalState.Accepted) {
       int256 vote_diff = calcVoteDifference(self, _id);
       if (vote_diff <= self.contestPercentage) {
         p.state = ProposalState.Contested;
-        p.contestEndDate = now + CONTEST_PERIOD;
+        p.contestEndDate = now + p.contestPeriod;
       }
     } else if (p_state == ProposalState.Contested) {
       if (now >= p.contestEndDate) {
