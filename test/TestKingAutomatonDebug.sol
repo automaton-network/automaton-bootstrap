@@ -6,7 +6,7 @@ import "../contracts/KingAutomaton.sol";
 
 contract KingAutomatonDebug is KingAutomaton {
   // Set mask to 0x10000 to trigger debug mode.
-  constructor() KingAutomaton (16, 4, 0x10000, 406080000, 10, -10, 2, 24 * 60 * 60) public {}
+  constructor() KingAutomaton (16, 4, 0x10000, 406080000, 10, -10, 2, 7, 7, 3, 24 * 60 * 60) public {}
 }
 
 contract TestKingAutomatonDebug {
