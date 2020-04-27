@@ -18,7 +18,7 @@ describe('TestKingAutomatonDEX', async (accounts) => {
   beforeEach(async () => {
     accounts = await web3.eth.getAccounts();
     mainAcct = accounts[0];
-    koh = await KingAutomaton.new(4, 16, "0x010000", "406080000", 10, -10, 2);
+    koh = await KingAutomaton.new(4, 16, "0x010000", "406080000", 10, -10, 2, 7, 7, 3, 24 * 60 * 60);
     minOrderAUTO = await koh.minOrderAUTO();
     minOrderETH = await koh.minOrderETH();
     DEXAddress = "0x0000000000000000000000000000000000000002";
@@ -81,7 +81,7 @@ describe('TestKingAutomatonDEX', async (accounts) => {
     assert.equal(buyerAUTOBalance.toString(), minOrderAUTO.toString(), "Buyer's AUTO balance is incorrect!");
     assert.equal(sellerAUTOBalance.toString(), minOrderAUTO.toString(), "Seller's AUTO balance is incorrect!");
     assert.equal(sellerETHBalance.toString(), minOrderETH.toString(), "Seller's ETH balance is incorrect!");
-    
+
     let initialSellerAccountBalance = new BN(await web3.eth.getBalance(accounts[0]));
     let txReceipt = await koh.withdraw(minOrderETH, { from: accounts[0] })
 

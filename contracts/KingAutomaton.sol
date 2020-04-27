@@ -6,6 +6,8 @@ import "./Proposals.sol";
 import "./KingOfTheHill.sol";
 
 contract KingAutomaton is KingOfTheHill {
+  uint256 public proposalsInitialPeriod;
+  uint256 public proposalsContestPeriod;
 
   int256 constant INT256_MIN = int256(uint256(1) << 255);
   int256 constant INT256_MAX = int256(~(uint256(1) << 255));
@@ -20,19 +22,25 @@ contract KingAutomaton is KingOfTheHill {
   // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  constructor(uint256 nSlots, uint256 minDifficultyBits, uint256 predefinedMask, uint256 initialDailySupply,
-      int256 approval_pct, int256 contest_pct, uint256 treasury_limit_pct) public {
-    numSlots = nSlots;
-    initMining(nSlots, minDifficultyBits, predefinedMask, initialDailySupply);
+  constructor(uint256 _numSlots, uint256 _minDifficultyBits, uint256 _predefinedMask, uint256 _initialDailySupply,
+      int256 _approvalPct, int256 _contestPct, uint256 _treasuryLimitPct,
+      uint256 _proposalsInitialPeriod, uint256 _proposalsContestPeriod, uint256 _proposalsMinPeriodLen,
+      uint256 _timeUnitInSeconds) public {
+    numSlots = _numSlots;
+    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
     initNames();
 
-    require(approval_pct > contest_pct, "Approval percentage must be bigger than contest percentage!");
-    proposalsData.approvalPercentage = approval_pct;
-    proposalsData.contestPercentage = contest_pct;
-    proposalsData.treasuryLimitPercentage = treasury_limit_pct;
+    require(_approvalPct > _contestPct, "Approval percentage must be bigger than contest percentage!");
+    proposalsData.approvalPercentage = _approvalPct;
+    proposalsData.contestPercentage = _contestPct;
+    proposalsData.treasuryLimitPercentage = _treasuryLimitPct;
     proposalsData.ballotBoxIDs = 99;  // Ensure special addresses are not already used
+    proposalsInitialPeriod = _proposalsInitialPeriod * _timeUnitInSeconds;
+    proposalsContestPeriod = _proposalsContestPeriod * _timeUnitInSeconds;
+    proposalsMinPeriodLen = _proposalsMinPeriodLen;
+    timeUnitInSeconds = _timeUnitInSeconds;
     // Check if we're on a testnet (We will not using predefined mask when going live)
-    if (predefinedMask != 0) {
+    if (_predefinedMask != 0) {
       // If so, fund the owner for debugging purposes.
       debugging = true;
       mint(msg.sender, 1000000 ether);
@@ -117,9 +125,10 @@ contract KingAutomaton is KingOfTheHill {
   // Treasury
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  uint256 public minPeriodLen = 3 days;
+  uint256 public proposalsMinPeriodLen;
 
   bool public debugging = false;
+  uint256 public timeUnitInSeconds;
 
   Proposals.Data public proposalsData;
 
@@ -146,13 +155,10 @@ contract KingAutomaton is KingOfTheHill {
     paidSlots = b.paidSlots;
   }
 
-  function getProposal(uint256 _id)
+  function getProposalInfo(uint256 _id)
   public view returns (address contributor, string memory title,
       string memory documentsLink, bytes memory documentsHash,
-      uint256 budgetPeriodLen, uint256 remainingPeriods,
-      uint256 budgetPerPeriod, uint256 nextPaymentDate,
-      Proposals.ProposalState state, uint256 initialEndDate,
-      uint256 contestEndDate) {
+      uint256 budgetPeriodLen, uint256 budgetPerPeriod, uint256 initialPeriod, uint256 contestPeriod) {
     Proposals.Proposal memory p = proposalsData.proposals[_id];
 
     contributor = p.contributor;
@@ -160,8 +166,16 @@ contract KingAutomaton is KingOfTheHill {
     documentsLink = p.documentsLink;
     documentsHash = p.documentsHash;
     budgetPeriodLen = p.budgetPeriodLen;
-    remainingPeriods = p.remainingPeriods;
     budgetPerPeriod = p.budgetPerPeriod;
+    initialPeriod = p.initialPeriod;
+    contestPeriod = p.contestPeriod;
+  }
+  function getProposalData(uint256 _id)
+  public view returns (uint256 remainingPeriods, uint256 nextPaymentDate,
+      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate) {
+    Proposals.Proposal memory p = proposalsData.proposals[_id];
+
+    remainingPeriods = p.remainingPeriods;
     nextPaymentDate = p.nextPaymentDate;
     state = p.state;
     initialEndDate = p.initialEndDate;
@@ -176,18 +190,23 @@ contract KingAutomaton is KingOfTheHill {
     address payable contributor, string calldata title, string calldata documents_link,
     bytes calldata documents_hash, uint256 budget_period_len, uint256 num_periods, uint256 budget_per_period
   ) external returns (uint256 _id) {
-    require(budget_period_len <= minPeriodLen);
+    require(budget_period_len >= proposalsMinPeriodLen);
     require(num_periods * budget_per_period <= proposalsData.treasuryLimitPercentage * balances[treasuryAddress] / 100);
-    _id = proposalsData.createProposal(
-        numSlots,
-        contributor,
-        title,
-        documents_link,
-        documents_hash,
-        budget_period_len,
-        num_periods,
-        budget_per_period
-    );
+    _id = proposalsData.getNewProposalID(numSlots);
+
+    Proposals.Proposal storage p = proposalsData.proposals[_id];
+    p.contributor = contributor;
+    p.title = title;
+    p.documentsLink = documents_link;
+    p.documentsHash = documents_hash;
+    p.state = Proposals.ProposalState.Started;
+
+    p.budgetPeriodLen = budget_period_len * timeUnitInSeconds;
+    p.remainingPeriods = num_periods;
+    p.budgetPerPeriod = budget_per_period;
+    p.initialPeriod = proposalsInitialPeriod;
+    p.contestPeriod = proposalsContestPeriod;
+
     transferInternal(treasuryAddress, address(_id), num_periods * budget_per_period);
   }
 

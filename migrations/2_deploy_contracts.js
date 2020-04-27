@@ -14,14 +14,19 @@ module.exports = function(deployer) {
   deployer.deploy(Proposals);
   deployer.link(Proposals, KingAutomaton);
 
-  numSlots = 256;
-  difficultyBits = 16;
-  mask = "0x10000";
-  initialDailySupply ="406080000";
-  approval_percentage = 10;
-  contest_percentage = -10;
-  treasury_limit_percentage = 2;
+  _numSlots = 256;
+  _minDifficultyBits = 16;
+  _predefinedMask = "0x10000";
+  _initialDailySupply = "406080000";
+  _approvalPct = 10;
+  _contestPct = -10;
+  _treasuryLimitPct = 2;
+  _proposalsInitialPeriod = 7;
+  _proposalsContestPeriod = 7;
+  _proposalsMinPeriodLen = 3;
+  _timeUnitInSeconds = 24 * 60 * 60;  // 1 day
 
-  deployer.deploy(KingAutomaton, numSlots, difficultyBits, mask, initialDailySupply,
-      approval_percentage, contest_percentage, treasury_limit_percentage);
+  deployer.deploy(KingAutomaton, _numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply, _approvalPct,
+      _contestPct, _treasuryLimitPct, _proposalsInitialPeriod, _proposalsContestPeriod, _proposalsMinPeriodLen,
+      _timeUnitInSeconds);
 };
