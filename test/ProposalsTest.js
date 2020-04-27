@@ -23,6 +23,11 @@ const PROPOSAL_STATE_REJECTED = 3;
 const PROPOSAL_STATE_CONTESTED = 4;
 const PROPOSAL_STATE_COMPLETED = 5;
 
+const PROPOSALS_INITIAL_PERIOD = 7;
+const PROPOSALS_CONTEST_PERIOD = 7;
+const PROPOSALS_MIN_PERIOD_LEN = 3;
+const TIME_UNIT_IN_SECONDS = 120;  // 2 minutes
+
 describe('TestKingAutomatonProposals 4 slots', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
   const Proposals = artifacts.require("Proposals");
@@ -31,10 +36,10 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     accounts = await web3.eth.getAccounts();
     account = accounts[0];
     slots = 4;
-    one_day_in_seconds = 120;  // 24 * 60 * 60;
 
     // Deploy contract and create proposal.
-    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2, one_day_in_seconds);
+    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2,
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
 
@@ -231,10 +236,10 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     accounts = await web3.eth.getAccounts();
     account = accounts[0];
     slots = 256;
-    one_day_in_seconds = 120;  // 24 * 60 * 60;
 
     // Deploy contract and create proposal.
-    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2, one_day_in_seconds);
+    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2,
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
 
@@ -434,16 +439,16 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     account = accounts[0];
     slots = 4;
     treasury_percentage = 2;
-    budget_period_len_days = 300;
+    budget_period_len = 300;
     num_periods = 2;
     budget_per_period = 20;
-    one_day_in_seconds = 120;  // 24 * 60 * 60;
 
     // Deploy contract and create proposal.
-    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, treasury_percentage, one_day_in_seconds);
+    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, treasury_percentage,
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
     await koh.setOwnerAllSlots();
-    id = await koh.createProposal.call(account, "", "", "0x", budget_period_len_days, num_periods, budget_per_period);
-    await koh.createProposal(account, "", "", "0x", budget_period_len_days, num_periods, budget_per_period);
+    id = await koh.createProposal.call(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
+    await koh.createProposal(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
     await koh.payForGas(id, slots - 1);
     await koh.updateProposalState(id);
 
@@ -506,7 +511,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     assert.equal(proposal_balance2.toString(), proposal_balance3.toString(), "Incorrect proposal balance!(1)");
     assert.equal(acc_balance2.toString(), acc_balance3.toString(), "Incorrect account balance!(1)");
 
-    increaseTime(budget_period_len_days * one_day_in_seconds + 1);
+    increaseTime(budget_period_len * TIME_UNIT_IN_SECONDS + 1);
 
     await koh.claimReward(id, budget_per_period);
 
@@ -520,7 +525,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     assert.equal(proposal_balance3.toNumber(), 0, "Proposal balance should be 0!");
 
     await catchRevert(koh.claimReward(id, budget_per_period), "Incorrect proposal state!");
-    increaseTime(budget_period_len_days * one_day_in_seconds + 1);
+    increaseTime(budget_period_len * TIME_UNIT_IN_SECONDS + 1);
     let proposal = await koh.getProposal(id);
     assert.equal(proposal.state, PROPOSAL_STATE_COMPLETED, "State is not Completed!");
   });
@@ -552,7 +557,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     assert.equal((proposal_balance1.sub(proposal_balance2)).toNumber(), budget_per_period, "Incorrect proposal balance!(1)");
     assert.equal((acc_balance2.sub(acc_balance1)).toNumber(), (budget_per_period / 2), "Incorrect account balance!(1)");
 
-    increaseTime(budget_period_len_days * one_day_in_seconds + 1);
+    increaseTime(budget_period_len * TIME_UNIT_IN_SECONDS + 1);
     await koh.claimReward(id, budget_per_period / 4);  // Claim some reward for last time
     let treasury_balance3 = new BN(await koh.balances(treasury_address));
     let proposal_balance3 = new BN(await koh.balances(proposal_address));
@@ -567,7 +572,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     let treasury_balance = new BN(await koh.balances(treasury_address));
     let max_budget = (treasury_balance.mul(new BN(treasury_percentage))).div(new BN(100));
     let budget = (max_budget.div(new BN(num_periods))).mul(new BN(2));
-    await catchRevert(koh.createProposal.call(account, "", "", "0x", budget_period_len_days, num_periods, budget));
+    await catchRevert(koh.createProposal.call(account, "", "", "0x", budget_period_len, num_periods, budget));
   });
 
   it("rejected / inactive contributor", async() => {
@@ -600,7 +605,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     let treasury_balance1 = new BN(await koh.balances(treasury_address));
     let proposal_balance1 = new BN(await koh.balances(proposal_address));
     let acc_balance1 = new BN(await koh.balances(account));
-    increaseTime(budget_period_len_days * one_day_in_seconds + 1);  // One missed period
+    increaseTime(budget_period_len * TIME_UNIT_IN_SECONDS + 1); // One missed period
 
     await catchRevert(koh.claimReward(id, budget_per_period * 2), "Budget exceeded!");
     await koh.claimReward(id, budget_per_period);
@@ -632,7 +637,7 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     let proposal_balance1 = new BN(await koh.balances(proposal_address));
     let acc_balance1 = new BN(await koh.balances(account));
 
-    increaseTime(budget_period_len_days * one_day_in_seconds * num_periods + 1);  // All periods are missed
+    increaseTime(budget_period_len * TIME_UNIT_IN_SECONDS * num_periods + 1);  // All periods are missed
     await koh.claimReward(id, budget_per_period, {from:account2});
 
     let treasury_balance2 = new BN(await koh.balances(treasury_address));

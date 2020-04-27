@@ -6,8 +6,8 @@ import "./Proposals.sol";
 import "./KingOfTheHill.sol";
 
 contract KingAutomaton is KingOfTheHill {
-  uint256 public proposalsInitialPeriod; // 1 weeks;
-  uint256 public proposalsContestPeriod;  //
+  uint256 public proposalsInitialPeriod;
+  uint256 public proposalsContestPeriod;
 
   int256 constant INT256_MIN = int256(uint256(1) << 255);
   int256 constant INT256_MAX = int256(~(uint256(1) << 255));
@@ -22,23 +22,25 @@ contract KingAutomaton is KingOfTheHill {
   // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  constructor(uint256 nSlots, uint256 minDifficultyBits, uint256 predefinedMask, uint256 initialDailySupply,
-      int256 approval_pct, int256 contest_pct, uint256 treasury_limit_pct, uint256 one_day_in_seconds) public {
-    numSlots = nSlots;
-    initMining(nSlots, minDifficultyBits, predefinedMask, initialDailySupply);
+  constructor(uint256 _numSlots, uint256 _minDifficultyBits, uint256 _predefinedMask, uint256 _initialDailySupply,
+      int256 _approvalPct, int256 _contestPct, uint256 _treasuryLimitPct,
+      uint256 _proposalsInitialPeriod, uint256 _proposalsContestPeriod, uint256 _proposalsMinPeriodLen,
+      uint256 _timeUnitInSeconds) public {
+    numSlots = _numSlots;
+    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
     initNames();
 
-    require(approval_pct > contest_pct, "Approval percentage must be bigger than contest percentage!");
-    proposalsData.approvalPercentage = approval_pct;
-    proposalsData.contestPercentage = contest_pct;
-    proposalsData.treasuryLimitPercentage = treasury_limit_pct;
+    require(_approvalPct > _contestPct, "Approval percentage must be bigger than contest percentage!");
+    proposalsData.approvalPercentage = _approvalPct;
+    proposalsData.contestPercentage = _contestPct;
+    proposalsData.treasuryLimitPercentage = _treasuryLimitPct;
     proposalsData.ballotBoxIDs = 99;  // Ensure special addresses are not already used
-    proposalsInitialPeriod = 7 * one_day_in_seconds;  // 7 days;
-    proposalsContestPeriod = 7 * one_day_in_seconds;  // 7 days;
-    minPeriodLenDays = 3;
-    oneDayinSeconds = one_day_in_seconds;
+    proposalsInitialPeriod = _proposalsInitialPeriod * _timeUnitInSeconds;
+    proposalsContestPeriod = _proposalsContestPeriod * _timeUnitInSeconds;
+    proposalsMinPeriodLen = _proposalsMinPeriodLen;
+    timeUnitInSeconds = _timeUnitInSeconds;
     // Check if we're on a testnet (We will not using predefined mask when going live)
-    if (predefinedMask != 0) {
+    if (_predefinedMask != 0) {
       // If so, fund the owner for debugging purposes.
       debugging = true;
       mint(msg.sender, 1000000 ether);
@@ -123,10 +125,10 @@ contract KingAutomaton is KingOfTheHill {
   // Treasury
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  uint256 public minPeriodLenDays;
+  uint256 public proposalsMinPeriodLen;
 
   bool public debugging = false;
-  uint256 oneDayinSeconds;
+  uint256 timeUnitInSeconds;
 
   Proposals.Data public proposalsData;
 
@@ -181,9 +183,9 @@ contract KingAutomaton is KingOfTheHill {
 
   function createProposal(
     address payable contributor, string calldata title, string calldata documents_link,
-    bytes calldata documents_hash, uint256 budget_period_len_days, uint256 num_periods, uint256 budget_per_period
+    bytes calldata documents_hash, uint256 budget_period_len, uint256 num_periods, uint256 budget_per_period
   ) external returns (uint256 _id) {
-    require(budget_period_len_days >= minPeriodLenDays);
+    require(budget_period_len >= proposalsMinPeriodLen);
     require(num_periods * budget_per_period <= proposalsData.treasuryLimitPercentage * balances[treasuryAddress] / 100);
     _id = proposalsData.getNewProposalID(numSlots);
 
@@ -194,7 +196,7 @@ contract KingAutomaton is KingOfTheHill {
     p.documentsHash = documents_hash;
     p.state = Proposals.ProposalState.Started;
 
-    p.budgetPeriodLen = budget_period_len_days * oneDayinSeconds;
+    p.budgetPeriodLen = budget_period_len * timeUnitInSeconds;
     p.remainingPeriods = num_periods;
     p.budgetPerPeriod = budget_per_period;
     p.initialPeriod = proposalsInitialPeriod;
