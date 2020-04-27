@@ -128,7 +128,7 @@ contract KingAutomaton is KingOfTheHill {
   uint256 public proposalsMinPeriodLen;
 
   bool public debugging = false;
-  uint256 timeUnitInSeconds;
+  uint256 public timeUnitInSeconds;
 
   Proposals.Data public proposalsData;
 
@@ -155,13 +155,10 @@ contract KingAutomaton is KingOfTheHill {
     paidSlots = b.paidSlots;
   }
 
-  function getProposal(uint256 _id)
+  function getProposalInfo(uint256 _id)
   public view returns (address contributor, string memory title,
       string memory documentsLink, bytes memory documentsHash,
-      uint256 budgetPeriodLen, uint256 remainingPeriods,
-      uint256 budgetPerPeriod, uint256 nextPaymentDate,
-      Proposals.ProposalState state, uint256 initialEndDate,
-      uint256 contestEndDate) {
+      uint256 budgetPeriodLen, uint256 budgetPerPeriod, uint256 initialPeriod, uint256 contestPeriod) {
     Proposals.Proposal memory p = proposalsData.proposals[_id];
 
     contributor = p.contributor;
@@ -169,8 +166,16 @@ contract KingAutomaton is KingOfTheHill {
     documentsLink = p.documentsLink;
     documentsHash = p.documentsHash;
     budgetPeriodLen = p.budgetPeriodLen;
-    remainingPeriods = p.remainingPeriods;
     budgetPerPeriod = p.budgetPerPeriod;
+    initialPeriod = p.initialPeriod;
+    contestPeriod = p.contestPeriod;
+  }
+  function getProposalData(uint256 _id)
+  public view returns (uint256 remainingPeriods, uint256 nextPaymentDate,
+      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate) {
+    Proposals.Proposal memory p = proposalsData.proposals[_id];
+
+    remainingPeriods = p.remainingPeriods;
     nextPaymentDate = p.nextPaymentDate;
     state = p.state;
     initialEndDate = p.initialEndDate;
