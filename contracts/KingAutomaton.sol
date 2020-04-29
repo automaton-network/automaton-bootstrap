@@ -302,8 +302,11 @@ contract KingAutomaton is KingOfTheHill {
     return minNumNoVotes;
   }
 
-  function getVoteWord(uint256 _id, uint256 _idx) public view returns(uint256) {
-    return proposalsData.ballotBoxes[_id].votes[_idx] & ALL_BUT_MSB;
+  function getVoteWords(uint256 _id, uint256 _idx_start, uint256 _length) public view returns(uint256[] memory result) {
+    result = new uint256[](_length);
+    for(uint256 i = 0; i < _length; i++) {
+      result[i] = proposalsData.ballotBoxes[_id].votes[_idx_start + i];
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
