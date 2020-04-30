@@ -26,7 +26,7 @@ const PROPOSAL_STATE_COMPLETED = 5;
 const PROPOSALS_INITIAL_PERIOD = 7;
 const PROPOSALS_CONTEST_PERIOD = 7;
 const PROPOSALS_MIN_PERIOD_LEN = 3;
-const NUM_HISTORY_PERIODS = 90;
+const NUM_HISTORY_PERIODS = 128;
 const TIME_UNIT_IN_SECONDS = 120;  // 2 minutes
 
 describe('TestKingAutomatonProposals 4 slots', async() => {

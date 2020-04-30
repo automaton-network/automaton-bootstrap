@@ -26,7 +26,7 @@ contract KingAutomaton is KingOfTheHill {
       int256 _approvalPct, int256 _contestPct, uint256 _treasuryLimitPct,
       uint256 _proposalsInitialPeriod, uint256 _proposalsContestPeriod, uint256 _proposalsMinPeriodLen,
       uint256 _numHistoryPeriods, uint256 _timeUnitInSeconds) public {
-    require(_approvalPct > _contestPct, "Approval percentage must be bigger than contest percentage!");
+    require(_approvalPct > _contestPct, "Approval% should be > contest%!");
     numSlots = _numSlots;
     proposalsData.approvalPercentage = _approvalPct;
     proposalsData.contestPercentage = _contestPct;
