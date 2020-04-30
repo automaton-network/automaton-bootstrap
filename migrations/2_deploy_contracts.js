@@ -24,9 +24,10 @@ module.exports = function(deployer) {
   _proposalsInitialPeriod = 7;
   _proposalsContestPeriod = 7;
   _proposalsMinPeriodLen = 3;
+  _proposalsNumHistoryPeriods = 90;
   _timeUnitInSeconds = 24 * 60 * 60;  // 1 day
 
   deployer.deploy(KingAutomaton, _numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply, _approvalPct,
       _contestPct, _treasuryLimitPct, _proposalsInitialPeriod, _proposalsContestPeriod, _proposalsMinPeriodLen,
-      _timeUnitInSeconds);
+      _proposalsNumHistoryPeriods, _timeUnitInSeconds);
 };

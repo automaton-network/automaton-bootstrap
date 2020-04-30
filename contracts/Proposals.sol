@@ -42,6 +42,11 @@ library Proposals {
     mapping (uint256 => uint256) payGas2;
   }
 
+  struct ProposalVotingHistory {
+    uint256 lastTime;
+    mapping (uint256 => uint256) words;
+  }
+
   struct Proposal {
     address payable contributor;
     string title;
@@ -59,6 +64,8 @@ library Proposals {
     uint256 contestEndDate;
     uint256 initialPeriod;
     uint256 contestPeriod;
+
+    ProposalVotingHistory history;
   }
 
   struct Data {
@@ -66,6 +73,8 @@ library Proposals {
     int256 contestPercentage;
     uint256 treasuryLimitPercentage;
     uint256 ballotBoxIDs;
+    uint256 numHistoryPeriods;
+    uint256 minHistoryPeriod;
 
     mapping (uint256 => BallotBox) ballotBoxes;
     mapping (uint256 => Proposal) proposals;
@@ -120,6 +129,38 @@ library Proposals {
     int256 yes = int256(b.voteCount[1]);
     int256 no = int256(b.voteCount[2]);
     return (yes - no) * 100 / int256(b.numSlots);
+  }
+
+  function updateProposalHistory(Data storage self, uint256 id) public {
+    Proposal storage p = self.proposals[id];
+    if (p.state == ProposalState.Uninitialized) {
+      return;
+    }
+    ProposalVotingHistory storage h = p.history;
+
+    // Time passed is less than a period
+    if (now - h.lastTime < self.minHistoryPeriod) {
+      return;
+    }
+
+    uint256 old_val = h.words[0] & 255;
+    uint256 new_val = uint256(calcVoteDifference(self, id) + 100);
+
+    // Nothing has changed
+    if (old_val == new_val) {
+      return;
+    }
+
+    uint256 numWords = (self.numHistoryPeriods + 31) / 32;
+    uint256 wordA;
+    uint256 wordB = h.words[numWords - 1];
+    for (uint256 i = numWords - 1; i > 0; i--) {
+      wordA = wordB;
+      wordB = h.words[i - 1];
+      h.words[i] = (wordA << 8) | (wordB >> 248);
+    }
+    h.words[0] = (wordB << 8) | new_val;
+    h.lastTime = now;
   }
 
   function castVote(Data storage self, uint256 _id, uint256 _slot, uint8 _choice) public validBallotBoxID(self, _id) {
@@ -177,6 +218,9 @@ library Proposals {
   ) public validBallotBoxID(self, _id) returns (bool _return_to_treasury) {
     Proposal storage p = self.proposals[_id];
     ProposalState p_state = p.state;
+    if (p_state == ProposalState.Uninitialized) {
+      return false;
+    }
     uint256 _initialEndDate = p.initialEndDate;
     if (p_state == ProposalState.Started) {
       BallotBox storage b = self.ballotBoxes[_id];
