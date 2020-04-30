@@ -26,11 +26,8 @@ contract KingAutomaton is KingOfTheHill {
       int256 _approvalPct, int256 _contestPct, uint256 _treasuryLimitPct,
       uint256 _proposalsInitialPeriod, uint256 _proposalsContestPeriod, uint256 _proposalsMinPeriodLen,
       uint256 _numHistoryPeriods, uint256 _timeUnitInSeconds) public {
-    numSlots = _numSlots;
-    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
-    initNames();
-
     require(_approvalPct > _contestPct, "Approval percentage must be bigger than contest percentage!");
+    numSlots = _numSlots;
     proposalsData.approvalPercentage = _approvalPct;
     proposalsData.contestPercentage = _contestPct;
     proposalsData.treasuryLimitPercentage = _treasuryLimitPct;
@@ -41,6 +38,9 @@ contract KingAutomaton is KingOfTheHill {
     proposalsContestPeriod = _proposalsContestPeriod * _timeUnitInSeconds;
     proposalsMinPeriodLen = _proposalsMinPeriodLen;
     timeUnitInSeconds = _timeUnitInSeconds;
+
+    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
+    initNames();
     // Check if we're on a testnet (We will not using predefined mask when going live)
     if (_predefinedMask != 0) {
       // If so, fund the owner for debugging purposes.
@@ -338,7 +338,7 @@ contract KingAutomaton is KingOfTheHill {
       // Setup predefined mask, useful for testing purposes.
       setMask(predefinedMask);
     }
-    rewardPerSlotPerSecond = (1 ether * initialDailySupply) / 1 days / nSlots;
+    rewardPerSlotPerSecond = (1 ether * initialDailySupply) / timeUnitInSeconds / nSlots;
   }
 
   function slotAcquired(uint256 id) internal override {
