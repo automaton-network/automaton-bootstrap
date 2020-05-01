@@ -42,6 +42,12 @@ library Proposals {
     mapping (uint256 => uint256) payGas2;
   }
 
+  struct ProposalVotingHistory {
+    uint256 lastTime;
+    uint256 front;
+    mapping (uint256 => uint256) words;
+  }
+
   struct Proposal {
     address payable contributor;
     string title;
@@ -59,6 +65,8 @@ library Proposals {
     uint256 contestEndDate;
     uint256 initialPeriod;
     uint256 contestPeriod;
+
+    ProposalVotingHistory history;
   }
 
   struct Data {
@@ -66,6 +74,8 @@ library Proposals {
     int256 contestPercentage;
     uint256 treasuryLimitPercentage;
     uint256 ballotBoxIDs;
+    uint256 numHistoryPeriods;
+    uint256 minHistoryPeriod;
 
     mapping (uint256 => BallotBox) ballotBoxes;
     mapping (uint256 => Proposal) proposals;
@@ -120,6 +130,47 @@ library Proposals {
     int256 yes = int256(b.voteCount[1]);
     int256 no = int256(b.voteCount[2]);
     return (yes - no) * 100 / int256(b.numSlots);
+  }
+
+  function updateProposalHistory(Data storage self, uint256 id) public {
+    Proposal storage p = self.proposals[id];
+    if (p.state == ProposalState.Uninitialized) {
+      return;
+    }
+    ProposalVotingHistory storage h = p.history;
+
+    // Time passed is less than a period
+    if (now - h.lastTime < self.minHistoryPeriod) {
+      return;
+    }
+    uint256 periods = self.numHistoryPeriods;
+    uint256 front = h.front;
+    uint256 rear = (front + periods - 1) % periods;
+    uint256 wordIdx = front / 32;
+    uint256 offset = (front % 32) * 8;
+    uint256 mask = 255 << offset;
+    uint256 word = h.words[wordIdx];
+
+    uint256 oldVal = (word & mask) >> offset;
+    uint256 newVal = uint256(calcVoteDifference(self, id) + 100);
+    if (oldVal == newVal) {
+      return;
+    }
+
+    if (wordIdx != (rear / 32)) {
+      wordIdx = rear / 32;
+      word = h.words[wordIdx];
+    }
+
+    offset = (rear % 32) * 8;
+    mask = 255 << offset;
+
+    word &= (mask ^ UINT256_MAX);
+    word |= newVal << offset;
+
+    h.words[wordIdx] = word;
+    h.front = rear;
+    h.lastTime = now;
   }
 
   function castVote(Data storage self, uint256 _id, uint256 _slot, uint8 _choice) public validBallotBoxID(self, _id) {
@@ -177,6 +228,9 @@ library Proposals {
   ) public validBallotBoxID(self, _id) returns (bool _return_to_treasury) {
     Proposal storage p = self.proposals[_id];
     ProposalState p_state = p.state;
+    if (p_state == ProposalState.Uninitialized) {
+      return false;
+    }
     uint256 _initialEndDate = p.initialEndDate;
     if (p_state == ProposalState.Started) {
       BallotBox storage b = self.ballotBoxes[_id];

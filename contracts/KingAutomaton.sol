@@ -25,20 +25,22 @@ contract KingAutomaton is KingOfTheHill {
   constructor(uint256 _numSlots, uint256 _minDifficultyBits, uint256 _predefinedMask, uint256 _initialDailySupply,
       int256 _approvalPct, int256 _contestPct, uint256 _treasuryLimitPct,
       uint256 _proposalsInitialPeriod, uint256 _proposalsContestPeriod, uint256 _proposalsMinPeriodLen,
-      uint256 _timeUnitInSeconds) public {
+      uint256 _numHistoryPeriods, uint256 _timeUnitInSeconds) public {
+    require(_approvalPct > _contestPct, "Approval% should be > contest%!");
     numSlots = _numSlots;
-    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
-    initNames();
-
-    require(_approvalPct > _contestPct, "Approval percentage must be bigger than contest percentage!");
     proposalsData.approvalPercentage = _approvalPct;
     proposalsData.contestPercentage = _contestPct;
     proposalsData.treasuryLimitPercentage = _treasuryLimitPct;
     proposalsData.ballotBoxIDs = 99;  // Ensure special addresses are not already used
+    proposalsData.numHistoryPeriods = _numHistoryPeriods;
+    proposalsData.minHistoryPeriod = _timeUnitInSeconds;
     proposalsInitialPeriod = _proposalsInitialPeriod * _timeUnitInSeconds;
     proposalsContestPeriod = _proposalsContestPeriod * _timeUnitInSeconds;
     proposalsMinPeriodLen = _proposalsMinPeriodLen;
     timeUnitInSeconds = _timeUnitInSeconds;
+
+    initMining(_numSlots, _minDifficultyBits, _predefinedMask, _initialDailySupply);
+    initNames();
     // Check if we're on a testnet (We will not using predefined mask when going live)
     if (_predefinedMask != 0) {
       // If so, fund the owner for debugging purposes.
@@ -170,9 +172,11 @@ contract KingAutomaton is KingOfTheHill {
     initialPeriod = p.initialPeriod;
     contestPeriod = p.contestPeriod;
   }
+
   function getProposalData(uint256 _id)
   public view returns (uint256 remainingPeriods, uint256 nextPaymentDate,
-      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate) {
+      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate, uint256[] memory votingHistory,
+      uint256 historyStartIdx) {
     Proposals.Proposal memory p = proposalsData.proposals[_id];
 
     remainingPeriods = p.remainingPeriods;
@@ -180,6 +184,15 @@ contract KingAutomaton is KingOfTheHill {
     state = p.state;
     initialEndDate = p.initialEndDate;
     contestEndDate = p.contestEndDate;
+
+    // TODO(Kari): Decide what to do when history is too long - give only first n words starting from current word?
+    uint256 numWords = (proposalsData.numHistoryPeriods + 31) / 32;
+    votingHistory = new uint256[](numWords);
+    Proposals.ProposalVotingHistory storage h = proposalsData.proposals[_id].history;
+    for(uint256 i = 0; i < numWords; ++i) {
+      votingHistory[i] = h.words[i];
+    }
+    historyStartIdx = h.front;
   }
 
   function createBallotBox(uint256 _choices) public returns (uint256) {
@@ -207,6 +220,8 @@ contract KingAutomaton is KingOfTheHill {
     p.initialPeriod = proposalsInitialPeriod;
     p.contestPeriod = proposalsContestPeriod;
 
+    p.history.front = 1;
+
     transferInternal(treasuryAddress, address(_id), num_periods * budget_per_period);
   }
 
@@ -228,6 +243,7 @@ contract KingAutomaton is KingOfTheHill {
   function castVote(uint256 _id, uint256 _slot, uint8 _choice) public slotOwner(_slot) {
     updateProposalState(_id);
     proposalsData.castVote(_id, _slot, _choice);
+    proposalsData.updateProposalHistory(_id);
   }
 
   function getVote(uint256 _id, uint256 _slot) public view returns (uint) {
@@ -327,7 +343,7 @@ contract KingAutomaton is KingOfTheHill {
       // Setup predefined mask, useful for testing purposes.
       setMask(predefinedMask);
     }
-    rewardPerSlotPerSecond = (1 ether * initialDailySupply) / 1 days / nSlots;
+    rewardPerSlotPerSecond = (1 ether * initialDailySupply) / timeUnitInSeconds / nSlots;
   }
 
   function slotAcquired(uint256 id) internal override {

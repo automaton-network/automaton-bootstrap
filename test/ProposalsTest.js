@@ -26,11 +26,11 @@ const PROPOSAL_STATE_COMPLETED = 5;
 const PROPOSALS_INITIAL_PERIOD = 7;
 const PROPOSALS_CONTEST_PERIOD = 7;
 const PROPOSALS_MIN_PERIOD_LEN = 3;
+const NUM_HISTORY_PERIODS = 128;
 const TIME_UNIT_IN_SECONDS = 120;  // 2 minutes
 
 describe('TestKingAutomatonProposals 4 slots', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
-  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
@@ -39,7 +39,8 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2,
-        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN,
+        NUM_HISTORY_PERIODS, TIME_UNIT_IN_SECONDS);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
 
@@ -53,7 +54,7 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     assert.exists(koh.address, "Contract wasn't deployed!");
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_PREPAYING, "Ballot box state is not PrepayingGas!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_STARTED, "Proposal state is not Started!");
     let proposal_data = await koh.proposalsData();
     assert.equal(proposal_data.approvalPercentage, 10, "Approval % in incorrect!");
@@ -108,7 +109,7 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     // Check if states are correct
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_STARTED, "Proposal state is not Started!");
     // Cast negative vote
     await koh.castVote(id, 0, VOTE_NO);
@@ -116,13 +117,13 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     // States shouldn't change during initial time
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_STARTED, "Proposal state is not Started!");
     increaseTime(proposals_initial_period);
     await koh.updateProposalState(id);
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_INACTIVE, "Ballot box state is not Inactive!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_REJECTED, "Proposal state is not Rejected!");
     let vote_difference = await koh.calcVoteDifference(id);
     assert.equal(vote_difference, -25, "Vote difference is incorrect!");
@@ -137,7 +138,7 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     await koh.updateProposalState(id);
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_INACTIVE, "Ballot box state is not Inactive!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_REJECTED, "Proposal state is not Rejected!");
     let vote_difference = await koh.calcVoteDifference(id);
     assert.equal(vote_difference, 0, "Vote difference is incorrect!");
@@ -154,7 +155,7 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     await koh.updateProposalState(id);
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_INACTIVE, "Ballot box state is not Inactive!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_REJECTED, "Proposal state is not Rejected!");
   });
 
@@ -169,7 +170,6 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
     let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_ACCEPTED, "Proposal state is not Accepted!");
-
     // Vote negative to enter contested state
     await koh.castVotesForRejection(id);
     await koh.updateProposalState(id);
@@ -230,7 +230,6 @@ describe('TestKingAutomatonProposals 4 slots', async() => {
 
 describe('TestKingAutomatonProposals 256 slots', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
-  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
@@ -239,7 +238,8 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2,
-        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN,
+        NUM_HISTORY_PERIODS, TIME_UNIT_IN_SECONDS);
     id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
     await koh.createProposal(account, "", "", "0x", 30, 3, 20);
 
@@ -315,7 +315,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_INACTIVE, "Ballot box state is not Inactive!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_REJECTED, "Proposal state is not Rejected!");
   });
 
@@ -361,7 +361,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_ACCEPTED, "Proposal state is not Accepted!");
 
     // Vote negative to enter contested state
@@ -369,7 +369,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
 
     assert.equal(proposal.state, PROPOSAL_STATE_CONTESTED, "Proposal state is not Contested!");
 
@@ -378,7 +378,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_INACTIVE, "Ballot box state is not Inactive!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_REJECTED, "Proposal state is not Rejected!");
   });
 
@@ -399,7 +399,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     let ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    let proposal = await koh.getProposalData(id)
+    let proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_ACCEPTED, "Proposal state is not Accepted!");
 
     // Vote negative to enter contested state
@@ -407,7 +407,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_CONTESTED, "Proposal state is not Contested!");
 
     // Vote positive
@@ -416,7 +416,7 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     // States shouldn't change until the end of contest
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_CONTESTED, "Proposal state is not Contested!");
     vote_difference = await koh.calcVoteDifference(id);
 
@@ -425,14 +425,13 @@ describe('TestKingAutomatonProposals 256 slots', async() => {
     await koh.updateProposalState(id);
     ballot = await koh.getBallotBox(id);
     assert.equal(ballot.state, BALLOT_STATE_ACTIVE, "Ballot box state is not Active!");
-    proposal = await koh.getProposalData(id)
+    proposal = await koh.getProposalData(id);
     assert.equal(proposal.state, PROPOSAL_STATE_ACCEPTED, "Proposal state is not Accepted!");
   });
 });
 
 describe('TestKingAutomatonProposals claiming reward', async() => {
   const KingAutomaton = artifacts.require("KingAutomaton");
-  const Proposals = artifacts.require("Proposals");
 
   beforeEach(async() => {
     accounts = await web3.eth.getAccounts();
@@ -445,7 +444,8 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
 
     // Deploy contract and create proposal.
     koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, treasury_percentage,
-        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN, TIME_UNIT_IN_SECONDS);
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN,
+        NUM_HISTORY_PERIODS, TIME_UNIT_IN_SECONDS);
     await koh.setOwnerAllSlots();
     id = await koh.createProposal.call(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
     await koh.createProposal(account, "", "", "0x", budget_period_len, num_periods, budget_per_period);
@@ -648,5 +648,149 @@ describe('TestKingAutomatonProposals claiming reward', async() => {
     assert.equal((proposal_balance1.sub(proposal_balance2)).toNumber(), budget_per_period * num_periods, "Incorrect proposal balance!");
     assert.equal(acc_balance1.toString(), acc_balance2.toString(), "Incorrect account balance!");
   });
+});
 
+describe('TestKingAutomatonProposals voting history 5 periods (1 word)', async() => {
+  const KingAutomaton = artifacts.require("KingAutomaton");
+
+  beforeEach(async() => {
+    accounts = await web3.eth.getAccounts();
+    account = accounts[0];
+    slots = 4;
+    num_periods = 5;
+
+    // Deploy contract and create proposal.
+    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -10, 2,
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN,
+        num_periods, TIME_UNIT_IN_SECONDS);
+    proposals_initial_period = 1 * await koh.proposalsInitialPeriod();
+
+    await koh.setOwnerAllSlots();
+    id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
+    await koh.createProposal(account, "", "", "0x", 30, 3, 20);
+    await koh.payForGas(id, slots - 1);
+    await koh.castVote(id, 0, 1);  // 25% / 125
+    increaseTime(proposals_initial_period);
+    await koh.updateProposalState(id);
+  });
+
+  it("period history", async() => {
+    let proposal = await koh.getProposalData(id);
+    let history = new BN(proposal.votingHistory[0]);
+    assert.equal("7d", history.toString(16), "Incorrect voting history! (0)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 2, 1);  // 50% / 150
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("960000007d", history.toString(16), "Incorrect voting history! (1)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 2, 2);  // 0% / 100
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("966400007d", history.toString(16), "Incorrect voting history! (2)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 3, 1);  // 25% / 125
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("96647d007d", history.toString(16), "Incorrect voting history! (3)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 0, 2);  // -25% / 75
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("96647d4b7d", history.toString(16), "Incorrect voting history! (4)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 1, 1);  // 0% / 100
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("96647d4b64", history.toString(16), "Incorrect voting history! (5)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 1, 2);  // -50% / 50
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("32647d4b64", history.toString(16), "Incorrect voting history! (6)");
+  });
+
+  it("period history 2", async() => {
+    await koh.castVote(id, 1, 1);
+    let proposal = await koh.getProposalData(id);
+    let history = new BN(proposal.votingHistory[0]);
+    assert.equal("960000007d", history.toString(16), "Incorrect voting history! (0)");
+
+    await koh.castVote(id, 2, 1);  // Change vote difference, but time passed < period
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("960000007d", history.toString(16), "History should not have changed! 0");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 2, 1);  // Update history - the new value should be added
+    proposal = await koh.getProposalData(id);
+    let calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("96af00007d", history.toString(16), "Incorrect voting history! (1)");
+
+    // Increase time but keep the vote difference the same
+    increaseTime(TIME_UNIT_IN_SECONDS * 3);
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("96af00007d", history.toString(16), "History should not have changed! 1");
+  });
+});
+
+describe('TestKingAutomatonProposals voting history 35 periods (2 words)', async() => {
+  const KingAutomaton = artifacts.require("KingAutomaton");
+
+  beforeEach(async() => {
+    accounts = await web3.eth.getAccounts();
+    account = accounts[0];
+    slots = 4;
+    num_periods = 35;
+
+    // Deploy contract and create proposal.
+    koh = await KingAutomaton.new(slots, 16, "0x010000", "406080000", 10, -100, 2,
+        PROPOSALS_INITIAL_PERIOD, PROPOSALS_CONTEST_PERIOD, PROPOSALS_MIN_PERIOD_LEN,
+        num_periods, TIME_UNIT_IN_SECONDS);
+    proposals_initial_period = 1 * await koh.proposalsInitialPeriod();
+
+    await koh.setOwnerAllSlots();
+    id = await koh.createProposal.call(account, "", "", "0x", 30, 3, 20);
+    await koh.createProposal(account, "", "", "0x", 30, 3, 20);
+    await koh.payForGas(id, slots - 1);
+    await koh.castVote(id, 0, 1);  // 25% / 125
+    increaseTime(proposals_initial_period);
+    await koh.updateProposalState(id);
+  });
+
+  it("period history", async() => {
+    let proposal = await koh.getProposalData(id);
+    let calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
+    let history = [calc_difference];
+    let idx = 0;
+    let value = 0;
+    let offset = 0;
+    let mask = 0;
+    let word = 0;
+
+    for (i = 1; i <= 36; i++) {
+      increaseTime(TIME_UNIT_IN_SECONDS);
+      await koh.castVote(id, i % slots, (i + Math.floor(i / slots)) % 2 + 1);
+      proposal = await koh.getProposalData(id);
+      idx = new BN(proposal.historyStartIdx);
+      calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
+      history.push(calc_difference.toString(16));
+      let word_idx = Math.floor(idx.toNumber() / 32);
+      word = new BN(proposal.votingHistory[word_idx]);
+      offset = (idx % 32) * 8;
+      mask = new BN(255);
+      mask.iushln(offset);
+      value = word.and(mask);
+      value.iushrn(offset);
+      assert.equal(value.toString(16), calc_difference.toString(16), "Incorrect value @ step " + i.toString());
+    }
+  });
 });
