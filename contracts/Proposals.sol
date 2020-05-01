@@ -44,6 +44,7 @@ library Proposals {
 
   struct ProposalVotingHistory {
     uint256 lastTime;
+    uint256 front;
     mapping (uint256 => uint256) words;
   }
 
@@ -142,24 +143,33 @@ library Proposals {
     if (now - h.lastTime < self.minHistoryPeriod) {
       return;
     }
+    uint256 periods = self.numHistoryPeriods;
+    uint256 front = h.front;
+    uint256 rear = (front + periods - 1) % periods;
+    uint256 wordIdx = front / 32;
+    uint256 offset = (front % 32) * 8;
+    uint256 mask = 255 << offset;
+    uint256 word = h.words[wordIdx];
 
-    uint256 old_val = h.words[0] & 255;
-    uint256 new_val = uint256(calcVoteDifference(self, id) + 100);
-
-    // Nothing has changed
-    if (old_val == new_val) {
+    uint256 oldVal = (word & mask) >> offset;
+    uint256 newVal = uint256(calcVoteDifference(self, id) + 100);
+    if (oldVal == newVal) {
       return;
     }
 
-    uint256 numWords = (self.numHistoryPeriods + 31) / 32;
-    uint256 wordA;
-    uint256 wordB = h.words[numWords - 1];
-    for (uint256 i = numWords - 1; i > 0; i--) {
-      wordA = wordB;
-      wordB = h.words[i - 1];
-      h.words[i] = (wordA << 8) | (wordB >> 248);
+    if (wordIdx != (rear / 32)) {
+      wordIdx = rear / 32;
+      word = h.words[wordIdx];
     }
-    h.words[0] = (wordB << 8) | new_val;
+
+    offset = (rear % 32) * 8;
+    mask = 255 << offset;
+
+    word &= (mask ^ UINT256_MAX);
+    word |= newVal << offset;
+
+    h.words[wordIdx] = word;
+    h.front = rear;
     h.lastTime = now;
   }
 

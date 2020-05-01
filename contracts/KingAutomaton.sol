@@ -175,7 +175,8 @@ contract KingAutomaton is KingOfTheHill {
 
   function getProposalData(uint256 _id)
   public view returns (uint256 remainingPeriods, uint256 nextPaymentDate,
-      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate, uint256[] memory votingHistory) {
+      Proposals.ProposalState state, uint256 initialEndDate, uint256 contestEndDate, uint256[] memory votingHistory,
+      uint256 historyStartIdx) {
     Proposals.Proposal memory p = proposalsData.proposals[_id];
 
     remainingPeriods = p.remainingPeriods;
@@ -184,12 +185,14 @@ contract KingAutomaton is KingOfTheHill {
     initialEndDate = p.initialEndDate;
     contestEndDate = p.contestEndDate;
 
+    // TODO(Kari): Decide what to do when history is too long - give only first n words starting from current word?
     uint256 numWords = (proposalsData.numHistoryPeriods + 31) / 32;
     votingHistory = new uint256[](numWords);
     Proposals.ProposalVotingHistory storage h = proposalsData.proposals[_id].history;
     for(uint256 i = 0; i < numWords; ++i) {
       votingHistory[i] = h.words[i];
     }
+    historyStartIdx = h.front;
   }
 
   function createBallotBox(uint256 _choices) public returns (uint256) {
@@ -216,6 +219,8 @@ contract KingAutomaton is KingOfTheHill {
     p.budgetPerPeriod = budget_per_period;
     p.initialPeriod = proposalsInitialPeriod;
     p.contestPeriod = proposalsContestPeriod;
+
+    p.history.front = 1;
 
     transferInternal(treasuryAddress, address(_id), num_periods * budget_per_period);
   }

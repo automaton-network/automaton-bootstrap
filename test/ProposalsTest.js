@@ -676,91 +676,69 @@ describe('TestKingAutomatonProposals voting history 5 periods (1 word)', async()
 
   it("period history", async() => {
     let proposal = await koh.getProposalData(id);
-    let calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     let history = new BN(proposal.votingHistory[0]);
-    let previous_value = new BN(0);
-    let new_value = previous_value;
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (0)");
+    assert.equal("7d", history.toString(16), "Incorrect voting history! (0)");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
     await koh.castVote(id, 2, 1);  // 50% / 150
     proposal = await koh.getProposalData(id);
-    calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    previous_value = new_value;
-    new_value = previous_value.ushln(8);
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (1)");
+    assert.equal("960000007d", history.toString(16), "Incorrect voting history! (1)");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
     await koh.castVote(id, 2, 2);  // 0% / 100
     proposal = await koh.getProposalData(id);
-    calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    previous_value = new_value;
-    new_value = previous_value.ushln(8);
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (2)");
+    assert.equal("966400007d", history.toString(16), "Incorrect voting history! (2)");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
     await koh.castVote(id, 3, 1);  // 25% / 125
     proposal = await koh.getProposalData(id);
-    calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    previous_value = new_value;
-    new_value = previous_value.ushln(8);
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (3)");
-
+    assert.equal("96647d007d", history.toString(16), "Incorrect voting history! (3)");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
     await koh.castVote(id, 0, 2);  // -25% / 75
     proposal = await koh.getProposalData(id);
-    calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    previous_value = new_value;
-    new_value = previous_value.ushln(8);
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (4)");
-
+    assert.equal("96647d4b7d", history.toString(16), "Incorrect voting history! (4)");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
     await koh.castVote(id, 1, 1);  // 0% / 100
     proposal = await koh.getProposalData(id);
-    calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    previous_value = new_value;
-    new_value = previous_value.ushln(8);
-    new_value.iadd(calc_difference);
-    assert.equal(new_value.toString(16), history.toString(16), "Incorrect voting history! (start over)");
+    assert.equal("96647d4b64", history.toString(16), "Incorrect voting history! (5)");
+
+    increaseTime(TIME_UNIT_IN_SECONDS);
+    await koh.castVote(id, 1, 2);  // -50% / 50
+    proposal = await koh.getProposalData(id);
+    history = new BN(proposal.votingHistory[0]);
+    assert.equal("32647d4b64", history.toString(16), "Incorrect voting history! (6)");
   });
 
   it("period history 2", async() => {
     await koh.castVote(id, 1, 1);
     let proposal = await koh.getProposalData(id);
     let history = new BN(proposal.votingHistory[0]);
-    let value = history;
+    assert.equal("960000007d", history.toString(16), "Incorrect voting history! (0)");
 
-    await koh.castVote(id, 2, 2);  // Change vote difference, but time passed < period
+    await koh.castVote(id, 2, 1);  // Change vote difference, but time passed < period
     proposal = await koh.getProposalData(id);
     history = new BN(proposal.votingHistory[0]);
-    assert.equal(value.toString(16), history.toString(16), "History should not have changed! 0");
+    assert.equal("960000007d", history.toString(16), "History should not have changed! 0");
 
     increaseTime(TIME_UNIT_IN_SECONDS);
-    await koh.castVote(id, 2, 2);  // Update history - the new value should be added
+    await koh.castVote(id, 2, 1);  // Update history - the new value should be added
     proposal = await koh.getProposalData(id);
     let calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
     history = new BN(proposal.votingHistory[0]);
-    value.iushln(8);
-    value.iadd(calc_difference);
-    assert.equal(value.toString(16), history.toString(16), "Incorrect voting history!");
+    assert.equal("96af00007d", history.toString(16), "Incorrect voting history! (1)");
 
     // Increase time but keep the vote difference the same
     increaseTime(TIME_UNIT_IN_SECONDS * 3);
     proposal = await koh.getProposalData(id);
     history = new BN(proposal.votingHistory[0]);
-    assert.equal(value.toString(16), history.toString(16), "History should not have changed! 1");
+    assert.equal("96af00007d", history.toString(16), "History should not have changed! 1");
   });
 });
 
@@ -791,33 +769,28 @@ describe('TestKingAutomatonProposals voting history 35 periods (2 words)', async
   it("period history", async() => {
     let proposal = await koh.getProposalData(id);
     let calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
-    let history0 = new BN(proposal.votingHistory[0]);
-    let history1 = new BN(proposal.votingHistory[1]);
-    let previous_value0 = new BN(0);
-    let previous_value1 = new BN(0);
-    let new_value0 = previous_value0;
-    let new_value1 = previous_value1;
-    new_value0.iadd(calc_difference);
+    let history = [calc_difference];
+    let idx = 0;
+    let value = 0;
+    let offset = 0;
+    let mask = 0;
+    let word = 0;
 
     for (i = 1; i <= 36; i++) {
       increaseTime(TIME_UNIT_IN_SECONDS);
       await koh.castVote(id, i % slots, (i + Math.floor(i / slots)) % 2 + 1);
       proposal = await koh.getProposalData(id);
+      idx = new BN(proposal.historyStartIdx);
       calc_difference = new BN((await koh.calcVoteDifference(id)) * 1 + 100);
-
-      history0 = new BN(proposal.votingHistory[0]);
-      history1 = new BN(proposal.votingHistory[1]);
-      previous_value0 = new_value0;
-      previous_value1 = new_value1;
-      new_value1 = previous_value1.ushln(8);
-      new_value1.iadd(previous_value0.ushrn(248));
-      new_value1.imaskn(256);
-      new_value0 = previous_value0.ushln(8);
-      new_value0.iadd(calc_difference);
-      new_value0.imaskn(256);
-
-      assert.equal(new_value0.toString(16), history0.toString(16), "Incorrect voting history! 0 @ step " + i.toString());
-      assert.equal(new_value1.toString(16), history1.toString(16), "Incorrect voting history! 1 @ step " + i.toString());
+      history.push(calc_difference.toString(16));
+      let word_idx = Math.floor(idx.toNumber() / 32);
+      word = new BN(proposal.votingHistory[word_idx]);
+      offset = (idx % 32) * 8;
+      mask = new BN(255);
+      mask.iushln(offset);
+      value = word.and(mask);
+      value.iushrn(offset);
+      assert.equal(value.toString(16), calc_difference.toString(16), "Incorrect value @ step " + i.toString());
     }
   });
 });
