@@ -69,9 +69,6 @@ contract ProjectClaiming is Sponsor {
       if (missedPeriods >= _periodsLeft) {
         _nextClaimDate = 0;
         _periodsLeft = 0;
-      // } else if (missedPeriods == _periodsLeft) {
-      //   _nextClaimDate += (missedPeriods + 1) * PERIOD_LENGTH;
-      //   _periodsLeft = 0;
       } else {
         _nextClaimDate += missedPeriods * PERIOD_LENGTH;
         _periodsLeft -= uint128(missedPeriods);

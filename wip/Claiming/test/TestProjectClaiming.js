@@ -407,204 +407,204 @@ describe('ProjectClaimingTest1', async() => {
   });
 
   it("Claim first, withdraw after the end", async() => {
-  //   /*
-  //   M (1500/m)
-  //     |-A (100/m) (individual)
-  //     |-B (500/m + 200 one-time) (project)
-  //       |-B1 (100/m) (individual)
-  //       |-B2 (100 one-time + 50 bonus) (individual)
-  //       |-B3 (400/m) (project)
-  //         |- B3_A (100/m) (individual)
-  //         |- B3_B (100/m + 150 bonus) (individual)
-  //     |-C (400 one-time) (project)
-  //       |-C1 (50/m + 50 one-time + 50 bonus) (individual)
-  //       |-C2 (100 one-time + 50 bonus) (individual)
-  //     |-D (200 one-time) (individual)
-  //   */
-  //   let expected_balance_b3 = 0;
-  //   let claimed_b3 = 0;
-  //   let expected_balance_b = 0;
-  //   let claimed_b = 0;
-  //   let expected_balance_c = 0;
-  //   let claimed_c = 0;
-  //   let expected_balance_main = 0;
-  //   let claimed_main = 0;
-  //   let indA_claimed = 0;
-  //   let indB1_claimed = 0;
-  //   let indB2_claimed = 0;
-  //   let indB3A_claimed = 0;
-  //   let indB3B_claimed = 0;
-  //   let indC1_claimed = 0;
-  //   let indC2_claimed = 0;
-  //   let indD_claimed = 0;
-  //
-  //   // ===== FIRST PERIOD =====
-  //   await increaseTime(PERIOD_LENGTH + 5);
-  //   await main_project.claimAndWithdrawFromSponsor();
-  //   expected_balance_main += 1500000;
-  //   await main_project.claim(0, {from: individual_A});
-  //   claimed_main += 100000;
-  //   indA_claimed += 100000;
-  //   await test_balances(individual_A, main_project, 100000, "First period claim individual_A!");
-  //   await subproject_b.claimAndWithdrawFromSponsor();
-  //   expected_balance_b += 700000;
-  //   expected_balance_main -= 700000;
-  //   await subproject_b.claim(0, {from: individual_B1});
-  //   claimed_b += 100000;
-  //   indB1_claimed += 100000;
-  //   await test_balances(individual_B1, subproject_b, 100000, "First period claim individual_B1!");
-  //   await subproject_b.claim(0, {from: individual_B2});
-  //   claimed_b += 150000;
-  //   indB2_claimed += 150000;
-  //   await test_balances(individual_B2, subproject_b, 150000, "First period claim individual_B2!");
-  //   await subproject_b3.claimAndWithdrawFromSponsor();
-  //   expected_balance_b3 += 400000;
-  //   expected_balance_b -= 400000;
-  //   await subproject_b3.claim(0, {from: individual_B3A});
-  //   claimed_b3 += 100000;
-  //   indB3A_claimed += 100000;
-  //   await test_balances(individual_B3A, subproject_b3, 100000, "First period claim individual_B3A!");
-  //   await subproject_b3.claim(0, {from: individual_B3B});
-  //   claimed_b3 += 250000;
-  //   indB3B_claimed += 250000;
-  //   await test_balances(individual_B3B, subproject_b3, 250000, "First period claim individual_B3B!");
-  //   await subproject_c.claimAndWithdrawFromSponsor();
-  //   expected_balance_c += 400000;
-  //   expected_balance_main -= 400000;
-  //   await subproject_c.claim(0, {from: individual_C1});
-  //   claimed_c += 150000;
-  //   indC1_claimed += 150000;
-  //   await test_balances(individual_C1, subproject_c, 150000, "First period claim individual_C1!");
-  //   await subproject_c.claim(0, {from: individual_C2});
-  //   claimed_c += 150000;
-  //   indC2_claimed += 150000;
-  //   await test_balances(individual_C2, subproject_c, 150000, "First period claim individual_C2!");
-  //   await main_project.claim(0, {from: individual_D});
-  //   claimed_main += 200000;
-  //   indD_claimed += 200000;
-  //   await test_balances(individual_D, main_project, 200000, "First period claim individual_D!");
-  //
-  //   // ===== SECOND PERIOD =====
-  //   await increaseTime(PERIOD_LENGTH);
-  //   await main_project.claimAndWithdrawFromSponsor();
-  //   expected_balance_main += 1500000 - expected_balance_main + claimed_main;
-  //   await main_project.claim(0, {from: individual_A});
-  //   claimed_main += 100000;
-  //   indA_claimed += 100000;
-  //   await test_balances(individual_A, main_project, 200000, "Second period claim individual_A!");
-  //   await subproject_b.claimAndWithdrawFromSponsor();
-  //   let new_reward = 500000 - expected_balance_b + claimed_b;
-  //   expected_balance_b += new_reward;
-  //   expected_balance_main -= new_reward;
-  //   await subproject_b.claim(0, {from: individual_B1});
-  //   claimed_b += 100000;
-  //   indB1_claimed += 100000;
-  //   await test_balances(individual_B1, subproject_b, 200000, "Second period claim individual_B1!");
-  //   await subproject_b.claim(0, {from: individual_B2});
-  //   // claimed_b += 0;
-  //   await test_balances(individual_B2, subproject_b, 150000, "Second period claim individual_B2!");
-  //   await subproject_b3.claimAndWithdrawFromSponsor();
-  //   new_reward = 400000 - expected_balance_b3 + claimed_b3
-  //   expected_balance_b3 += new_reward;
-  //   expected_balance_b -= new_reward;
-  //   await subproject_b3.claim(0, {from: individual_B3A});
-  //   claimed_b3 += 100000;
-  //   indB3A_claimed += 100000;
-  //   await test_balances(individual_B3A, subproject_b3, 200000, "Second period claim individual_B3A!");
-  //   await subproject_b3.claim(0, {from: individual_B3B});
-  //   claimed_b3 += 100000;
-  //   indB3B_claimed += 100000;
-  //   await test_balances(individual_B3B, subproject_b3, 350000, "Second period claim individual_B3B!");
-  //   await subproject_c.claimAndWithdrawFromSponsor();
-  //   // expected_balance_c += 0;
-  //   // expected_balance_main -= 0;
-  //   await subproject_c.claim(0, {from: individual_C1});
-  //   claimed_c += 50000;
-  //   indC1_claimed += 50000;
-  //   await test_balances(individual_C1, subproject_c, 200000, "Second period claim individual_C1!");
-  //   await subproject_c.claim(0, {from: individual_C2});
-  //   // claimed_c += 0;
-  //   await test_balances(individual_C2, subproject_c, 150000, "Second period claim individual_C2!");
-  //   await main_project.claim(0, {from: individual_D});
-  //   // claimed_main += 0;
-  //   await test_balances(individual_D, main_project, 200000, "Second period claim individual_D!");
-  //
-  //   // ===== THIRD / LAST PERIOD =====
-  //   await increaseTime(PERIOD_LENGTH);
-  //   await main_project.claimAndWithdrawFromSponsor();
-  //   expected_balance_main += 1500000 - expected_balance_main + claimed_main;
-  //   await main_project.claim(0, {from: individual_A});
-  //   claimed_main += 100000;
-  //   indA_claimed += 100000;
-  //   await test_balances(individual_A, main_project, 300000, "Third/Last period claim individual_A!");
-  //   await subproject_b.claimAndWithdrawFromSponsor();
-  //   new_reward = 500000 - expected_balance_b + claimed_b;
-  //   expected_balance_b += new_reward;
-  //   expected_balance_main -= new_reward;
-  //   await subproject_b.claim(0, {from: individual_B1});
-  //   claimed_b += 100000;
-  //   indB1_claimed += 100000;
-  //   await test_balances(individual_B1, subproject_b, 300000, "Third/Last period claim individual_B1!");
-  //   await subproject_b.claim(0, {from: individual_B2});
-  //   claimed_b += 0;
-  //   await test_balances(individual_B2, subproject_b, 150000, "Third/Last period claim individual_B2!");
-  //   await subproject_b3.claimAndWithdrawFromSponsor();
-  //   new_reward = 400000 - expected_balance_b3 + claimed_b3;
-  //   expected_balance_b3 += new_reward;
-  //   expected_balance_b -= new_reward;
-  //   await subproject_b3.claim(0, {from: individual_B3A});
-  //   claimed_b3 += 100000;
-  //   indB3A_claimed += 100000;
-  //   await test_balances(individual_B3A, subproject_b3, 300000, "Third/Last period claim individual_B3A!");
-  //   await subproject_b3.claim(0, {from: individual_B3B});
-  //   claimed_b3 += 100000;
-  //   indB3B_claimed += 100000;
-  //   await test_balances(individual_B3B, subproject_b3, 450000, "Third/Last period claim individual_B3B!");
-  //   await subproject_c.claimAndWithdrawFromSponsor();
-  //   // expected_balance_c += 0;
-  //   // expected_balance_main -= 0;
-  //   await subproject_c.claim(0, {from: individual_C1});
-  //   claimed_c += 50000;
-  //   indC1_claimed += 50000;
-  //   await test_balances(individual_C1, subproject_c, 250000, "Third/Last period claim individual_C1!");
-  //   await subproject_c.claim(0, {from: individual_C2});
-  //   claimed_c += 0;
-  //   await test_balances(individual_C2, subproject_c, 150000, "Third/Last period claim individual_C2!");
-  //   await main_project.claim(0, {from: individual_D});
-  //   claimed_main += 0;
-  //   await test_balances(individual_D, main_project, 200000, "Third/Last period claim individual_D!");
-  //
-  //   // RETURNING UNUSED TEST
-  //   await increaseTime(PERIOD_LENGTH);
-  //   await return_to_sponsor_test(subproject_b3, expected_balance_b3, true, expected_balance_b3 - claimed_b3, nextClaimDate + 3*PERIOD_LENGTH, "subproject_b3 returning to sponsor!");
-  //   expected_balance_b += expected_balance_b3 - claimed_b3;
-  //   await return_to_sponsor_test(subproject_b, expected_balance_b, true, expected_balance_b - claimed_b, nextClaimDate + 3*PERIOD_LENGTH, "subproject_b returning to sponsor!");
-  //   expected_balance_main += expected_balance_b - claimed_b;
-  //   await return_to_sponsor_test(subproject_c, expected_balance_c, true, 0, nextClaimDate + 3*PERIOD_LENGTH, "subproject_c returning to sponsor!");
-  //   await return_to_sponsor_test(main_project, expected_balance_main, true, expected_balance_main - claimed_main, nextClaimDate + 3*PERIOD_LENGTH, "main_project returning to sponsor!");
-  //
-  //   // WITHDRAW (project balance must be = claimed)
-  //   await withdraw_test(individual_A, main_project, claimed_main, indA_claimed, "Withdraw individual A!");
-  //   claimed_main -= indA_claimed;
-  //   await withdraw_test(individual_B1, subproject_b, claimed_b, indB1_claimed, "Withdraw individual B1!");
-  //   claimed_b -= indB1_claimed;
-  //   await withdraw_test(individual_B2, subproject_b, claimed_b, indB2_claimed, "Withdraw individual B2!");
-  //   await withdraw_test(individual_B3A, subproject_b3, claimed_b3, indB3A_claimed, "Withdraw individual B3A!");
-  //   claimed_b3 -= indB3A_claimed;
-  //   await withdraw_test(individual_B3B, subproject_b3, claimed_b3, indB3B_claimed, "Withdraw individual B3B!");
-  //   await withdraw_test(individual_C1, subproject_c, claimed_c, indC1_claimed, "Withdraw individual C1!");
-  //   claimed_c -= indC1_claimed;
-  //   await withdraw_test(individual_C2, subproject_c, claimed_c, indC2_claimed, "Withdraw individual C2!");
-  //   await withdraw_test(individual_D, main_project, claimed_main, indD_claimed, "Withdraw individual D!");
-  //
-  //   let final_balance = new BN(await web3.eth.getBalance(main_project.address));
-  //   assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project main!");
-  //   final_balance = new BN(await web3.eth.getBalance(subproject_c.address));
-  //   assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project C!");
-  //   final_balance = new BN(await web3.eth.getBalance(subproject_b3.address));
-  //   assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project B3!");
-  //   final_balance = new BN(await web3.eth.getBalance(subproject_b.address));
-  //   assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project B!");
+    /*
+    M (1500/m)
+      |-A (100/m) (individual)
+      |-B (500/m + 200 one-time) (project)
+        |-B1 (100/m) (individual)
+        |-B2 (100 one-time + 50 bonus) (individual)
+        |-B3 (400/m) (project)
+          |- B3_A (100/m) (individual)
+          |- B3_B (100/m + 150 bonus) (individual)
+      |-C (400 one-time) (project)
+        |-C1 (50/m + 50 one-time + 50 bonus) (individual)
+        |-C2 (100 one-time + 50 bonus) (individual)
+      |-D (200 one-time) (individual)
+    */
+    let expected_balance_b3 = 0;
+    let claimed_b3 = 0;
+    let expected_balance_b = 0;
+    let claimed_b = 0;
+    let expected_balance_c = 0;
+    let claimed_c = 0;
+    let expected_balance_main = 0;
+    let claimed_main = 0;
+    let indA_claimed = 0;
+    let indB1_claimed = 0;
+    let indB2_claimed = 0;
+    let indB3A_claimed = 0;
+    let indB3B_claimed = 0;
+    let indC1_claimed = 0;
+    let indC2_claimed = 0;
+    let indD_claimed = 0;
+
+    // ===== FIRST PERIOD =====
+    await increaseTime(PERIOD_LENGTH + 5);
+    await main_project.claimAndWithdrawFromSponsor();
+    expected_balance_main += 1500000;
+    await main_project.claim(0, {from: individual_A});
+    claimed_main += 100000;
+    indA_claimed += 100000;
+    await test_balances(individual_A, main_project, 100000, "First period claim individual_A!");
+    await subproject_b.claimAndWithdrawFromSponsor();
+    expected_balance_b += 700000;
+    expected_balance_main -= 700000;
+    await subproject_b.claim(0, {from: individual_B1});
+    claimed_b += 100000;
+    indB1_claimed += 100000;
+    await test_balances(individual_B1, subproject_b, 100000, "First period claim individual_B1!");
+    await subproject_b.claim(0, {from: individual_B2});
+    claimed_b += 150000;
+    indB2_claimed += 150000;
+    await test_balances(individual_B2, subproject_b, 150000, "First period claim individual_B2!");
+    await subproject_b3.claimAndWithdrawFromSponsor();
+    expected_balance_b3 += 400000;
+    expected_balance_b -= 400000;
+    await subproject_b3.claim(0, {from: individual_B3A});
+    claimed_b3 += 100000;
+    indB3A_claimed += 100000;
+    await test_balances(individual_B3A, subproject_b3, 100000, "First period claim individual_B3A!");
+    await subproject_b3.claim(0, {from: individual_B3B});
+    claimed_b3 += 250000;
+    indB3B_claimed += 250000;
+    await test_balances(individual_B3B, subproject_b3, 250000, "First period claim individual_B3B!");
+    await subproject_c.claimAndWithdrawFromSponsor();
+    expected_balance_c += 400000;
+    expected_balance_main -= 400000;
+    await subproject_c.claim(0, {from: individual_C1});
+    claimed_c += 150000;
+    indC1_claimed += 150000;
+    await test_balances(individual_C1, subproject_c, 150000, "First period claim individual_C1!");
+    await subproject_c.claim(0, {from: individual_C2});
+    claimed_c += 150000;
+    indC2_claimed += 150000;
+    await test_balances(individual_C2, subproject_c, 150000, "First period claim individual_C2!");
+    await main_project.claim(0, {from: individual_D});
+    claimed_main += 200000;
+    indD_claimed += 200000;
+    await test_balances(individual_D, main_project, 200000, "First period claim individual_D!");
+
+    // ===== SECOND PERIOD =====
+    await increaseTime(PERIOD_LENGTH);
+    await main_project.claimAndWithdrawFromSponsor();
+    expected_balance_main += 1500000 - expected_balance_main + claimed_main;
+    await main_project.claim(0, {from: individual_A});
+    claimed_main += 100000;
+    indA_claimed += 100000;
+    await test_balances(individual_A, main_project, 200000, "Second period claim individual_A!");
+    await subproject_b.claimAndWithdrawFromSponsor();
+    let new_reward = 500000 - expected_balance_b + claimed_b;
+    expected_balance_b += new_reward;
+    expected_balance_main -= new_reward;
+    await subproject_b.claim(0, {from: individual_B1});
+    claimed_b += 100000;
+    indB1_claimed += 100000;
+    await test_balances(individual_B1, subproject_b, 200000, "Second period claim individual_B1!");
+    await subproject_b.claim(0, {from: individual_B2});
+    // claimed_b += 0;
+    await test_balances(individual_B2, subproject_b, 150000, "Second period claim individual_B2!");
+    await subproject_b3.claimAndWithdrawFromSponsor();
+    new_reward = 400000 - expected_balance_b3 + claimed_b3
+    expected_balance_b3 += new_reward;
+    expected_balance_b -= new_reward;
+    await subproject_b3.claim(0, {from: individual_B3A});
+    claimed_b3 += 100000;
+    indB3A_claimed += 100000;
+    await test_balances(individual_B3A, subproject_b3, 200000, "Second period claim individual_B3A!");
+    await subproject_b3.claim(0, {from: individual_B3B});
+    claimed_b3 += 100000;
+    indB3B_claimed += 100000;
+    await test_balances(individual_B3B, subproject_b3, 350000, "Second period claim individual_B3B!");
+    await subproject_c.claimAndWithdrawFromSponsor();
+    // expected_balance_c += 0;
+    // expected_balance_main -= 0;
+    await subproject_c.claim(0, {from: individual_C1});
+    claimed_c += 50000;
+    indC1_claimed += 50000;
+    await test_balances(individual_C1, subproject_c, 200000, "Second period claim individual_C1!");
+    await subproject_c.claim(0, {from: individual_C2});
+    // claimed_c += 0;
+    await test_balances(individual_C2, subproject_c, 150000, "Second period claim individual_C2!");
+    await main_project.claim(0, {from: individual_D});
+    // claimed_main += 0;
+    await test_balances(individual_D, main_project, 200000, "Second period claim individual_D!");
+
+    // ===== THIRD / LAST PERIOD =====
+    await increaseTime(PERIOD_LENGTH);
+    await main_project.claimAndWithdrawFromSponsor();
+    expected_balance_main += 1500000 - expected_balance_main + claimed_main;
+    await main_project.claim(0, {from: individual_A});
+    claimed_main += 100000;
+    indA_claimed += 100000;
+    await test_balances(individual_A, main_project, 300000, "Third/Last period claim individual_A!");
+    await subproject_b.claimAndWithdrawFromSponsor();
+    new_reward = 500000 - expected_balance_b + claimed_b;
+    expected_balance_b += new_reward;
+    expected_balance_main -= new_reward;
+    await subproject_b.claim(0, {from: individual_B1});
+    claimed_b += 100000;
+    indB1_claimed += 100000;
+    await test_balances(individual_B1, subproject_b, 300000, "Third/Last period claim individual_B1!");
+    await subproject_b.claim(0, {from: individual_B2});
+    claimed_b += 0;
+    await test_balances(individual_B2, subproject_b, 150000, "Third/Last period claim individual_B2!");
+    await subproject_b3.claimAndWithdrawFromSponsor();
+    new_reward = 400000 - expected_balance_b3 + claimed_b3;
+    expected_balance_b3 += new_reward;
+    expected_balance_b -= new_reward;
+    await subproject_b3.claim(0, {from: individual_B3A});
+    claimed_b3 += 100000;
+    indB3A_claimed += 100000;
+    await test_balances(individual_B3A, subproject_b3, 300000, "Third/Last period claim individual_B3A!");
+    await subproject_b3.claim(0, {from: individual_B3B});
+    claimed_b3 += 100000;
+    indB3B_claimed += 100000;
+    await test_balances(individual_B3B, subproject_b3, 450000, "Third/Last period claim individual_B3B!");
+    await subproject_c.claimAndWithdrawFromSponsor();
+    // expected_balance_c += 0;
+    // expected_balance_main -= 0;
+    await subproject_c.claim(0, {from: individual_C1});
+    claimed_c += 50000;
+    indC1_claimed += 50000;
+    await test_balances(individual_C1, subproject_c, 250000, "Third/Last period claim individual_C1!");
+    await subproject_c.claim(0, {from: individual_C2});
+    claimed_c += 0;
+    await test_balances(individual_C2, subproject_c, 150000, "Third/Last period claim individual_C2!");
+    await main_project.claim(0, {from: individual_D});
+    claimed_main += 0;
+    await test_balances(individual_D, main_project, 200000, "Third/Last period claim individual_D!");
+
+    // RETURNING UNUSED TEST
+    await increaseTime(PERIOD_LENGTH);
+    await return_to_sponsor_test(subproject_b3, expected_balance_b3, true, expected_balance_b3 - claimed_b3, nextClaimDate + 3*PERIOD_LENGTH, "subproject_b3 returning to sponsor!");
+    expected_balance_b += expected_balance_b3 - claimed_b3;
+    await return_to_sponsor_test(subproject_b, expected_balance_b, true, expected_balance_b - claimed_b, nextClaimDate + 3*PERIOD_LENGTH, "subproject_b returning to sponsor!");
+    expected_balance_main += expected_balance_b - claimed_b;
+    await return_to_sponsor_test(subproject_c, expected_balance_c, true, 0, nextClaimDate + 3*PERIOD_LENGTH, "subproject_c returning to sponsor!");
+    await return_to_sponsor_test(main_project, expected_balance_main, true, expected_balance_main - claimed_main, nextClaimDate + 3*PERIOD_LENGTH, "main_project returning to sponsor!");
+
+    // WITHDRAW (project balance must be = claimed)
+    await withdraw_test(individual_A, main_project, claimed_main, indA_claimed, "Withdraw individual A!");
+    claimed_main -= indA_claimed;
+    await withdraw_test(individual_B1, subproject_b, claimed_b, indB1_claimed, "Withdraw individual B1!");
+    claimed_b -= indB1_claimed;
+    await withdraw_test(individual_B2, subproject_b, claimed_b, indB2_claimed, "Withdraw individual B2!");
+    await withdraw_test(individual_B3A, subproject_b3, claimed_b3, indB3A_claimed, "Withdraw individual B3A!");
+    claimed_b3 -= indB3A_claimed;
+    await withdraw_test(individual_B3B, subproject_b3, claimed_b3, indB3B_claimed, "Withdraw individual B3B!");
+    await withdraw_test(individual_C1, subproject_c, claimed_c, indC1_claimed, "Withdraw individual C1!");
+    claimed_c -= indC1_claimed;
+    await withdraw_test(individual_C2, subproject_c, claimed_c, indC2_claimed, "Withdraw individual C2!");
+    await withdraw_test(individual_D, main_project, claimed_main, indD_claimed, "Withdraw individual D!");
+
+    let final_balance = new BN(await web3.eth.getBalance(main_project.address));
+    assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project main!");
+    final_balance = new BN(await web3.eth.getBalance(subproject_c.address));
+    assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project C!");
+    final_balance = new BN(await web3.eth.getBalance(subproject_b3.address));
+    assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project B3!");
+    final_balance = new BN(await web3.eth.getBalance(subproject_b.address));
+    assert.equal(final_balance.toNumber(), 0 , "Incorrect final balance project B!");
   });
 
   it("Claim partial reward", async() => {
